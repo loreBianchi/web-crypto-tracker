@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { withStyles, makeStyles } from '@material-ui/core/styles';
-
+import { withStyles } from '@material-ui/core/styles';
+import CryptoDialog from './CryptoDialog';
 import FetchCoinData from '../Actions/FetchCoinData';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -41,10 +41,6 @@ class CryptoContainer extends Component {
 
   renderCoinCards() {
     const { crypto } = this.props;
-    if(!crypto.data){
-      return <Paper>Loading</Paper>;
-  }
-    else{
       console.log('xx=>', crypto.data);
       let data = crypto.data.data;
       return <TableBody>
@@ -54,35 +50,41 @@ class CryptoContainer extends Component {
             {coin.name}
           </StyledTableCell>
           <StyledTableCell align="right">{coin.symbol}</StyledTableCell>
-          <StyledTableCell align="right">{coin.priceUsd}</StyledTableCell>
-          <StyledTableCell align="right">{coin.marketCapUsd}</StyledTableCell>
+          <StyledTableCell align="right">{Number(coin.priceUsd).toFixed(2)}</StyledTableCell>
+          <StyledTableCell align="right">{Number(coin.marketCapUsd).toFixed(2)}</StyledTableCell>
+          <StyledTableCell align="center">
+            <CryptoDialog coin={coin} />
+          </StyledTableCell>
         </StyledTableRow>
       )) : null}
 
       </TableBody>
-    }
+    
   }
 
   render() {
     const { crypto } = this.props;
-    console.log('c', crypto);
-
-    return (
-          <Paper>
-          <Table caria-label="customized table">
-            <TableHead>
-              <TableRow>
-                <StyledTableCell>Name</StyledTableCell>
-                <StyledTableCell align="right">symbol</StyledTableCell>
-                <StyledTableCell align="right">price (Usd)</StyledTableCell>
-                <StyledTableCell align="right">marketCap (Usd)</StyledTableCell>
-              </TableRow>
-            </TableHead>
-            {this.renderCoinCards()}
-          </Table>
-        </Paper>
-    
-    )
+    if(!crypto.data){
+      return <Paper>Loading</Paper>;
+    } else {
+      return (
+        <Paper>
+        <Table caria-label="customized table">
+          <TableHead>
+            <TableRow>
+              <StyledTableCell>Name</StyledTableCell>
+              <StyledTableCell align="right">Symbol</StyledTableCell>
+              <StyledTableCell align="right">Price (Usd)</StyledTableCell>
+              <StyledTableCell align="right">MarketCap (Usd)</StyledTableCell>
+              <StyledTableCell align="center">History</StyledTableCell>
+            </TableRow>
+          </TableHead>
+          {this.renderCoinCards()}
+        </Table>
+      </Paper>
+  
+  )
+    }
   }
 }
 
