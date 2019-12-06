@@ -9,6 +9,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import TimelineTwoToneIcon from '@material-ui/icons/TimelineTwoTone';
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
+import moment from 'moment';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
 } from 'recharts';
@@ -46,19 +47,18 @@ const data = [
 
 const cardinal = curveCardinal.tension(0.2);
 
-export default function CryptoDialog({coin, interval='d1'}) {
+export default function CryptoDialog({coin, interval='m1'}) {
   const [open, setOpen] = React.useState(false);
   const [scroll, setScroll] = React.useState('paper');
-  const content = useSelector(state => state); //this hook gives us redux store state
   const dispatch = useDispatch(); //this hook gives us dispatch method
-
+  const history = useSelector(state => state.history)
 
   function getHistory() {
     return dispatch => {
       dispatch({type: FETCHING_COIN_HISTORY})
       axios.get(`${apiBaseURL}/${coin.id}/history?interval=${interval}`)
         .then(res => dispatch({
-          type: FETCHING_COIN_HISTORY_SUCCESS, payload: res.data
+          type: FETCHING_COIN_HISTORY_SUCCESS, payload: res.data.data
         }))
         .catch(err => dispatch({
           type: FETCHING_COIN_HISTORY_ERROR, payload: err
@@ -85,7 +85,22 @@ export default function CryptoDialog({coin, interval='d1'}) {
       }
     }
   }, [open]);
-  const coinHistory = content.history.data && content.history.data.data;
+
+  function prapareData(arr) {
+    let array = [];
+    arr.map(x => {
+      // console.log('price usd is ==>', x.priceUsd);     
+      let obj = {
+        price: Number(x.priceUsd).toFixed(2),
+        time: moment(x.time).format("D/MM hh:mm"),
+      }
+      array.push(obj);
+    })
+    let filtred = array.filter((x,i)=> i % 30 === 0);
+    console.log('f', filtred)
+    return filtred;
+  }
+
   return (
     <>
       <TimelineTwoToneIcon onClick={handleClickOpen('paper')} />
@@ -102,41 +117,36 @@ export default function CryptoDialog({coin, interval='d1'}) {
           <Typography variant="subtitle1" gutterBottom>
             1 {coin.name} is currently
           </Typography>
-          <Typography variant="h3" gutterBottom>
+          <Typography variant="h5" gutterBottom>
             {Number(coin.priceUsd).toFixed(2)} $
           </Typography>
 
-          {/* <DialogContentText
+          <DialogContentText
             id="scroll-dialog-description"
             ref={descriptionElementRef}
             tabIndex={-1}
           >
-            {coinHistory && coinHistory.map((d, i) => (
-              <p key={i}>{d.priceUsd}</p>
-            ))}
-          </DialogContentText> */}
-          <AreaChart
-            width={600}
+          </DialogContentText>
+          {history.data && <AreaChart
+            width={800}
             height={400}
-            data={data}
+            data={prapareData(history.data)}
             margin={{
               top: 10, right: 30, left: 0, bottom: 0,
             }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
+            <XAxis dataKey="time" />
+            <YAxis dataKey="price" domain={['dataMin', 'dataMax']} />
             <Tooltip />
-            <Area type="monotone" dataKey="uv" stroke="#8884d8" fill="#8884d8" fillOpacity={0.3} />
-            <Area type={cardinal} dataKey="uv" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.3} />
+            <Area type="monotone" dataKey="price" stroke="#8884d8" fill="#8884d8" fillOpacity={0.3} />
+            <Area type={cardinal} dataKey="price" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.3} />
           </AreaChart>
+        }
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleClose} color="primary">
-            Subscribe
+            Close
           </Button>
         </DialogActions>
       </Dialog>
