@@ -3,13 +3,11 @@ import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
 import Typography from '@material-ui/core/Typography';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import TimelineTwoToneIcon from '@material-ui/icons/TimelineTwoTone';
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
-import moment from 'moment';
 import apiBaseURL from '../constants/Apis';
 import { 
   FETCHING_COIN_HISTORY,
@@ -18,12 +16,19 @@ import {
 } from '../Actions/ActionsTypes';
 import AssetAreaChart from './AssetAreaChart';
 
+const intervalsBtnContainerStyles = {
+  marginTop: 20,
+  marginBottom: 20
+}
 
-export default function CryptoDialog({coin, interval='m1'}) {
+export default function CryptoDialog({coin}) {
   const [open, setOpen] = React.useState(false);
+  const [interval, setInterval] = React.useState('m1');
   const [scroll, setScroll] = React.useState('paper');
   const dispatch = useDispatch(); //this hook gives us dispatch method
-  const history = useSelector(state => state.history)
+  const history = useSelector(state => state.history);
+
+  const intervals = ['m1', 'm5', 'm15', 'm30', 'h1', 'h2', 'h6', 'h12', 'd1'];
 
   function getHistory() {
     return dispatch => {
@@ -36,6 +41,13 @@ export default function CryptoDialog({coin, interval='m1'}) {
           type: FETCHING_COIN_HISTORY_ERROR, payload: err
         }))
     }
+  }
+
+  const handleIntervalClick = (period) => {
+    setInterval(period);
+    setTimeout(() => {
+      dispatch(getHistory());
+    }, 400)    
   }
 
   const handleClickOpen = scrollType => () => {
@@ -77,13 +89,11 @@ export default function CryptoDialog({coin, interval='m1'}) {
           <Typography variant="h5" gutterBottom>
             {Number(coin.priceUsd).toFixed(2)} $
           </Typography>
-
-          <DialogContentText
-            id="scroll-dialog-description"
-            ref={descriptionElementRef}
-            tabIndex={-1}
-          >
-          </DialogContentText>
+          <div style={intervalsBtnContainerStyles}>
+            {intervals.map((x, i) => <Button color={x === interval ? 'primary' : 'secondary' }
+              variant={x === interval ? 'outlined' : null}
+              onClick={() => handleIntervalClick(x)} key={i}>{x}</Button>)}
+          </div>
           <AssetAreaChart data={history.data} />
         </DialogContent>
         <DialogActions>

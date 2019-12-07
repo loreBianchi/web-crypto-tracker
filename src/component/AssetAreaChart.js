@@ -47,7 +47,7 @@ export default function AssetAreaChart({data}) {
       <XAxis dataKey="time" />
       <YAxis dataKey="price" domain={['dataMin', 'dataMax']} />
       <Tooltip />
-      <Area type="monotone" dataKey="price" stroke="#8884d8" fill="#8884d8" fillOpacity={0.3} />
+      {/* <Area type="monotone" dataKey="price" stroke="#8884d8" fill="#8884d8" fillOpacity={0.3} /> */}
       <Area type={cardinal} dataKey="price" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.3} />
     </AreaChart> : <div style={loaderContainerStyles}><CircularProgress /></div>}
     </>
